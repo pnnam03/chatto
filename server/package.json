@@ -1,0 +1,43 @@
+{
+  "name": "fastify-base",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "dev": "node --watch ./src/index.js",
+    "prettier": "prettier --check .",
+    "prettier:fix": "prettier --write ."
+  },
+  "imports": {
+    "#configs": "./src/configs/index.js",
+    "#constants": "./src/constants/index.js",
+    "#controllers": "./src/controllers/index.js",
+    "#db": "./src/db/index.js",
+    "#middlewares": "./src/middlewares/index.js",
+    "#models": "./src/models/index.js",
+    "#responses": "./src/responses/index.js",
+    "#routes": "./src/routes/index.js",
+    "#services": "./src/services/index.js",
+    "#utils": "./src/utils/index.js"
+  },
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@fastify/multipart": "^8.2.0",
+    "bcrypt": "^5.1.1",
+    "cls-hooked": "^4.2.2",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.26.2",
+    "fastify-socket.io": "^5.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.13",
+    "pg": "^8.11.5",
+    "sequelize": "^6.37.3",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.6",
+    "pino-pretty": "^11.0.0"
+  }
+}
