@@ -3,7 +3,6 @@
 // import {format} from "timeago.js";
 import { format, isToday } from "date-fns";
 import { useState } from "react";
-import { socket } from "../../socketio.jsx";
 import useChannelStore from "../../stores/channelStore.js";
 import useUserStore from "../../stores/userStore.js";
 import AddChannel from "../AddChannel/AddChannel.jsx";
@@ -11,7 +10,8 @@ import AvatarGroup from "../AvatarGroup.jsx";
 import "./chatList.css";
 
 const ChatList = () => {
-  const { channels, currentChannel, setCurrentChannel } = useChannelStore();
+  const { channels, currentChannel, setCurrentChannel, setChannels } =
+    useChannelStore();
   const [addMode, setAddMode] = useState(false);
   const [input, setInput] = useState("");
   const { user } = useUserStore();
@@ -45,6 +45,15 @@ const ChatList = () => {
   //   c.user.username.toLowerCase().includes(input.toLowerCase())
   // );
 
+  const handleChannelChange = (channel) => {
+    setCurrentChannel(channel);
+    setChannels(
+      channels.map((c) =>
+        c.id === channel.id ? { ...c, hasNewMessage: false } : c
+      )
+    );
+  };
+
   return (
     <div className="chatList">
       <div className="search">
@@ -63,22 +72,19 @@ const ChatList = () => {
           onClick={() => setAddMode((prev) => !prev)}
         />
       </div>
-      {channels.map((channel) => (
+      {channels?.map((channel) => (
         <div
           className="item"
           key={channel.id}
           onClick={() => {
-            socket.emit("leave-channel", currentChannel);
-            socket.emit("join-channel", channel);
-            setCurrentChannel(channel);
+            handleChannelChange(channel);
           }}
           style={{
-            backgroundColor: channel === currentChannel ? "rgba(17, 25, 40, 0.75)" : "",
+            backgroundColor:
+              channel.id === currentChannel?.id ? "rgba(17, 25, 40, 0.75)" : "",
           }}
         >
           <AvatarGroup channel={channel} />
-
-          {/* <GroupAvatar bigAvatarSrc={currentChannel.members.}/> */}
           <div className="texts">
             <span>
               {/* {channel.user.blocked.includes(currentUser.id)
@@ -88,10 +94,10 @@ const ChatList = () => {
             </span>
             {channel.lastMessage ? (
               <div className="last-message">
-                <p className="last-message-info">
+                <p className={!channel.hasNewMessage ? "last-message-info" : "last-message-info has-new-message"}>
                   {channel.lastMessage.sender?.firstName}:{" "}
                   {channel.lastMessage.type === "text" ? (
-                    channel.lastMessage.data
+                    channel.lastMessage.text
                   ) : (
                     <>
                       Image
@@ -110,8 +116,7 @@ const ChatList = () => {
                       ? "HH:mm"
                       : "dd/MM"
                   )}
-                                {/* {formatDistanceToNowStrict(new Date(channel.lastMessage.updatedAt))} */}
-
+                  {channel.hasNewMessage ? "🔵" : ""}
                 </p>
               </div>
             ) : null}

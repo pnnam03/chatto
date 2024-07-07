@@ -44,18 +44,18 @@ fastify.ready().then(() => {
     });
 
     socket.on("join-channel", (channel) => {
-      // console.log(`Socket ${socket.id} has joined channel ${channel.id}`);
+      console.log(`Socket ${socket.id} has joined channel ${channel.id}`);
+      // console.log(channel);
       socket.join(channel.id);
     });
 
     socket.on("leave-channel", (channel) => {
-      // console.log(`Socket ${socket.id} has leaved channel ${channel.id}`);
+      console.log(`Socket ${socket.id} has leaved channel ${channel.id}`);
       socket.leave(channel.id);
     });
 
     socket.on("msg-sent", async (data) => {
-      // console.log(data);
-      // console.log(`send msg to channel ${data.channelId}`);
+      console.log(data);
       socket.to(data.channelId).emit("msg-received", data);
     });
 

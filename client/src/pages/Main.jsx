@@ -6,12 +6,12 @@ import ChatList from "../components/ChatList/ChatList.jsx";
 import Detail from "../components/Detail/Detail.jsx";
 import UserInfo from "../components/UserInfo/UserInfo.jsx";
 import { SignInPath } from "../routes_path.jsx";
-import { socket } from "../socketio";
+import { socket } from "../socketio.jsx";
 import useChannelStore from "../stores/channelStore.js";
 import useUserStore from "../stores/userStore.js";
 import { toastOptions } from "../toastOptions.jsx";
-const NewMain = () => {
-  const { channels, fetchChannels, channelError, setCurrentChannel } =
+const Main = () => {
+  const { channels, fetchChannels, channelError, setCurrentChannel, currentChannel } =
     useChannelStore();
   const { user, userError } = useUserStore();
 
@@ -32,9 +32,11 @@ const NewMain = () => {
   }, [user]);
 
   useEffect(() => {
-    channels?.length > 0 &&
-      setCurrentChannel(channels[0]) &&
-      socket.emit("join-channel", channels[0]);
+    channels?.map((channel) => {
+      socket.emit("join-channel", channel);
+    });
+    if (channels?.length && !currentChannel)
+      setCurrentChannel(channels[0]);
   }, [channels]);
 
   return (
@@ -49,4 +51,4 @@ const NewMain = () => {
   );
 };
 
-export default NewMain;
+export default Main;

@@ -33,6 +33,8 @@ export class channelController {
   static async addMembers(req, res) {
     const members = req.body.members;
     const channelId = req.params.channelId;
+    console.log(members);
+    console.log(channelId);
     const responseData = await channelService.addMembers(channelId, members);
     return res.status(200).send(responseData);
   }

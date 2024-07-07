@@ -1,7 +1,4 @@
 .chatList {
-  /* overflow: scroll; */
-
-  /* overflow-y: scroll; */
   overflow-y: scroll;
   min-width: 300px;
   max-width: 400px;
@@ -16,7 +13,6 @@
       background-color: rgba(17, 25, 40, 0.5);
       display: flex;
       align-items: center;
-      /* gap: 20px; */
       border-radius: 10px;
       padding: 10px;
 
@@ -51,7 +47,7 @@
     padding: 20px;
     cursor: pointer;
     border-bottom: 1px solid #dddddd35;
-    /* background-color: pink; */
+
     img {
       width: 50px;
       height: 50px;
@@ -76,16 +72,24 @@
 
       .last-message {
         display: flex;
-        /* justify-content: center; */
         align-items: center;
-        /* max-width: 100%; */
 
         .last-message-info {
+          display: flex;
           width: 150px;
           flex: 1;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+        }
+
+        .has-new-message {
+          width: 150px;
+          flex: 1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-weight: bold;
         }
       }
     }

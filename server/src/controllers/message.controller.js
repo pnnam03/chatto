@@ -2,10 +2,11 @@ import { messageService } from "#services";
 
 export class messageController {
   static async create(req, res) {
-    const {type, data} = req.body;
+    const {type, text, file} = req.body;
     const sender = req.user.id;
     const channelId = req.params.channelId;
-    const responseData = await messageService.create(sender, channelId, type, data);
+    const fileId = file?.id || null;
+    const responseData = await messageService.create(sender, channelId, type, text, fileId);
     return res.status(200).send(responseData);
   }
 

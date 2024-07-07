@@ -3,4 +3,5 @@ export const MESSAGE_TYPE = {
   IMAGE: "image",
   VIDEO: "video",
   FILE: "file",
+  NOTIFICATION: "notification"
 };

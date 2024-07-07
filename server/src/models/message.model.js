@@ -19,8 +19,10 @@ export const Message = postgres.define("Message", {
     values: Object.values(MESSAGE_TYPE),
     defaultValue: MESSAGE_TYPE.TEXT,
   },
-  data: {
-    type: DataTypes.STRING,
-    allowNull: false,
+  text: {
+    type: DataTypes.TEXT,
   },
+  file: {
+    type: DataTypes.UUID
+  }
 });

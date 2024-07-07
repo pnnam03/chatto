@@ -1,29 +1,106 @@
 .detail {
   flex: 1;
-
+  min-width: 200px;
+  max-width: 240px;
   .members {
-    padding: 30px 20px;
+    /* padding: 30px 20px; */
+    padding: 5px;
     display: flex;
     flex-direction: column;
+    width: 100%;
     /* align-items: center; */
-    gap: 15px;
-    border-bottom: 1px solid #dddddd35;
-
+    /* gap: 15px; */
+    /* border-bottom: 1px solid #dddddd35; */
+    
     .user-info {
-      width: 100%;
+      /* width: 100%; */
       display: flex;
-      /* justify-content: center; */
+      padding: 5px;
       align-items: center;
       gap: 10px;
+      cursor: pointer;
+
+      img {
+        width: 40px;
+        height: 40px;
+        padding: 10px;
+      }
+    }
+
+    .user-info:hover {
+      background-color: rgba(17, 25, 40, 0.3);
     }
   }
 
   .files {
-    padding: 30px 20px;
+    overflow-y: scroll;
+    height: 200px;
+    padding: 5px;
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid #dddddd35;
 
+    .base {
+      position: sticky;
+    }
+    
+    .file-card {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+
+      img {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      .file-info {
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+
+        .file-name {
+          flex: 1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-size: medium;
+          font-weight: 600;
+          max-width: 100%; 
+          box-sizing: border-box;
+        }
+
+        .file-extension {
+
+          font-size: small;
+          font-weight: 600;
+          color: grey
+        }
+      }
+    }
+  }
+
+  .base {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 10px;
+    h4 {
+      flex: 1
+    }
+    img {
+      width: 30px;
+      height: 30px;
+      padding: 10px;
+      border-radius: 50%;
+    }
+  }
+
+  .base:hover {
+    background-color: rgba(17, 25, 40, 0.3);
   }
 
   button {

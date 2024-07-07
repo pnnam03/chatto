@@ -9,19 +9,26 @@ import { upload } from "../../libs/uploader.jsx";
 import { SignInPath } from "../../routes_path.jsx";
 import { socket } from "../../socketio.jsx";
 import useChannelStore from "../../stores/channelStore.js";
+import useMessageStore from "../../stores/messageStore.js";
 import useUserStore from "../../stores/userStore.js";
 import { toastOptions } from "../../toastOptions.jsx";
 import AvatarGroup from "../AvatarGroup.jsx";
 import "./chat.css";
 const Chat = () => {
+  const { setMsgs } = useMessageStore();
   const [messages, setMessages] = useState([]);
-  const [currentMessage, setMessage] = useState({ data: "", type: "text" });
-  const { user } = useUserStore();
+  const [currentMessage, setMessage] = useState({
+    text: "",
+    type: "text",
+    file: null,
+  });
+  const [incomingMessage, setIncomingMessage] = useState(null);
   const { currentChannel } = useChannelStore();
   const [open, setOpen] = useState(false);
   const [isCurrentUserBlocked, a] = useState(null);
   const [isReceiverBlocked, b] = useState(null);
   const { channels, setChannels } = useChannelStore();
+  const { user } = useUserStore();
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -31,6 +38,10 @@ const Chat = () => {
   useEffect(() => {
     currentChannel && fetchMessages();
   }, [currentChannel]);
+
+  useEffect(() => {
+    setMsgs(messages);
+  }, [messages]);
 
   const fetchMessages = async () => {
     try {
@@ -95,7 +106,7 @@ const Chat = () => {
       const responseData = await response.json();
       socket.emit("msg-sent", responseData);
       setMessages([...messages, responseData]);
-      setMessage({ data: "", type: "text" });
+      setMessage({ text: "", type: "text", file: null });
       // update the channel with new message
       setChannels(
         channels.map((channel) =>
@@ -109,35 +120,54 @@ const Chat = () => {
     }
   };
 
+  // handle incoming message from socket
   useEffect(() => {
     socket.on("msg-received", (data) => {
-      setMessages((msgs) => [...msgs, data]);
+      setIncomingMessage(data);
     });
   }, []);
 
+  useEffect(() => {
+    if (incomingMessage !== null) {
+      console.log(incomingMessage);
+      if (incomingMessage.channelId == currentChannel.id) {
+        // append the message to current channel message
+        // update the channel with incoming message
+        setMessages([...messages, incomingMessage]);
+        setChannels(
+          channels.map((channel) =>
+            channel.id === incomingMessage.channelId
+              ? { ...channel, hasNewMessage: false, lastMessage: incomingMessage }
+              : channel
+          )
+        );
+      }
+      else {
+        // notify received a message in different channel
+        // update the channel with incoming message
+        setChannels(
+          channels.map((channel) =>
+            channel.id === incomingMessage.channelId
+              ? { ...channel, hasNewMessage: true, lastMessage: incomingMessage }
+              : channel
+          )
+        );
+      }
+      // update the channel with new message
+      setIncomingMessage(null);
+    }
+  }, [incomingMessage]);
+
+  
   const handleSendMessage = () => {
-    if (currentMessage?.data === "") {
+    if (currentMessage?.type === "text" && currentMessage?.text === "") {
       return;
     }
-
-    // const body = {
-    //   data: currentMessage.data,
-    //   type: currentMessage.type,
-    // };
-    // setMessages([...messages, { ...body, sender: user }]);
-    // setMessage({ data: "", type: "text" });
-
-    // socket.emit("msg-sent", {
-    //   sender: user,
-    //   data: currentMessage.data,
-    //   type: currentMessage.type,
-    //   channel: currentChannel.id,
-    // });
     sendMessage();
   };
 
   const handleEmoji = (e) => {
-    setMessage({ data: currentMessage.data + e.emoji, type: "text" });
+    setMessage({ text: currentMessage.text + e.emoji, type: "text", file: "" });
     setOpen(false);
   };
 
@@ -148,8 +178,10 @@ const Chat = () => {
   const handleImg = async (e) => {
     if (e.target.files[0]) {
       const imgRecord = await upload(e.target.files[0], user.accessToken);
+      console.log(imgRecord);
       setMessage({
-        data: `http://localhost:3000/api/v1/media/${imgRecord.id}`,
+        ...currentMessage,
+        file: imgRecord,
         type: imgRecord.type,
       });
     }
@@ -183,8 +215,13 @@ const Chat = () => {
             ) : null}
 
             <div className="texts">
-              {message.type === "file" && <img src={message.data} alt="" />}
-              {message.type === "text" && <p>{message.data}</p>}
+              {message.type === "file" && (
+                <img
+                  src={`http://localhost:3000/api/v1/media/${message.file.id}`}
+                  alt=""
+                />
+              )}
+              {message.type === "text" && <p>{message.text}</p>}
               <span>
                 {format(
                   new Date(message.updatedAt),
@@ -218,9 +255,9 @@ const Chat = () => {
               ? "You cannot send a message"
               : "Type a message..."
           }
-          value={currentMessage.data}
+          value={currentMessage.text}
           onChange={(e) => {
-            setMessage({ data: e.target.value, type: "text" });
+            setMessage({ text: e.target.value, type: "text", file: null });
           }}
           disabled={isCurrentUserBlocked || isReceiverBlocked}
         />

@@ -1,14 +1,17 @@
 import { postgres } from "#db";
-import { Channel, Message } from "#models";
+import { Message } from "#models";
 import { baseService } from "./base.service.js";
 import { userService } from "./user.service.js";
 export class messageService {
-  static async create(sender, channelId, type, data) {
+  static async create(sender, channelId, type, text, file) {
     const record = postgres.transaction(async (t) => {
-      const message = await Message.create({ sender, channelId, type, data });
+      console.log(Object.keys(Message.associations));
+      const message = await Message.create({ sender, channelId, type, text, file});
       const senderInfo = await userService.getInfo(message.sender);
-      const channel = await baseService.getOne(Channel, channelId);
+      const channel = await message.getChannel();
       channel.lastMessage = message.id;
+      const medium = await message.getMedium();
+      message.file = medium;
       await channel.save();
       return { ...message.dataValues, sender: senderInfo};
     });
@@ -34,7 +37,8 @@ export class messageService {
     const response = await Promise.all(
       messages.map(async (message) => {
         const senderInfo = await userService.getInfo(message.sender);
-        return { ...message.dataValues, sender: senderInfo };
+        const medium = await message.getMedium();
+        return { ...message.dataValues, sender: senderInfo, file: medium};
       }),
     );
     return response;

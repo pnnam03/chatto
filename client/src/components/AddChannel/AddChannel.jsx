@@ -1,6 +1,4 @@
-import { Avatar } from "@mui/material";
 import { useState } from "react";
-import { stringAvatar } from "../../libs/stringAvatar.jsx";
 import useChannelStore from "../../stores/channelStore.js";
 import useUserStore from "../../stores/userStore.js";
 import "./addChannel.css";
@@ -23,9 +21,12 @@ const AddChannel = () => {
 
   const handleAdd = async (e) => {
     e.preventDefault();
+    const formData = new FormData(e.target);
+    const channelName = formData.get("name");
+
     const body = {
-      name: "channel name",
-      members: [user.id, newMember.id],
+      name: channelName,
+      members: [user.id],
     };
     const response = await fetch(
       `http://localhost:3000/api/v1/channels`,
@@ -45,28 +46,11 @@ const AddChannel = () => {
 
   return (
     <div className="add-channel">
-      <form onSubmit={handleSearch}>
-        <input type="text" placeholder="Email" name="email" />
-        <button>Search</button>
+      <h2 style={{padding: "10px"}}>Create a Channel</h2>
+      <form onSubmit={handleAdd}>
+        <input type="text" placeholder="Channel Name" name="name" />
+        <button>Create</button>
       </form>
-      {newMember && (
-        <div className="user">
-          <div className="detail">
-            <Avatar
-              {...stringAvatar(
-                `${newMember?.firstName} ${newMember?.lastName}`
-              )}
-            />
-            <div>
-              <h3>
-                {newMember.firstName} {newMember.lastName}
-              </h3>
-              <span>{newMember?.email}</span>
-            </div>
-          </div>
-          <button onClick={handleAdd}>Add</button>
-        </div>
-      )}
     </div>
   );
 };

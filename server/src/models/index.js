@@ -1,28 +1,23 @@
 import { postgres } from "#db";
 import { pinoLogger } from "#utils";
-import { VerificationCode } from "./verificationCode.model.js";
-// await User.sync({ alter: true });
-// pinoLogger.info("Table `User` synced!");
-// await Channel.sync({ alter: true });
-// pinoLogger.info("Table `Channel` synced!");
-// await VerificationCode.sync({ alter: true });
-// pinoLogger.info("Table `VerificationCode` synced!");
-// await Message.sync({ alter: true });
-// pinoLogger.info("Table `Message` synced!");
-// await ChannelUser.sync({ alter: true });
-// pinoLogger.info("Table `ChannelUser` synced!");
 import { Channel } from "./channel.model.js";
+import { Media } from "./media.model.js";
 import { Message } from "./message.model.js";
 import { User } from "./user.model.js";
+import { VerificationCode } from "./verificationCode.model.js";
 
-User.belongsToMany(Channel, { through: "ChannelUsers"});
-Channel.belongsToMany(User, { through: "ChannelUsers"});
+User.belongsToMany(Channel, { through: "ChannelUsers", foreignKey: "channelId", targetKey: "id", onDelete: "CASCADE"});
+Channel.belongsToMany(User, { through: "ChannelUsers", foreignKey: "userId", targetKey: "id", onDelete: "CASCADE"});
 
 Channel.belongsTo(User, { foreignKey: "creator", targetKey: "id", onDelete: "CASCADE" });
 VerificationCode.belongsTo(User, { foreignKey: "email", targetKey: "email", onDelete: "CASCADE" });
 Message.belongsTo(User, { foreignKey: "sender", targetKey: "id", onDelete: "CASCADE" });
+
 Message.belongsTo(Channel, { foreignKey: "channelId", targetKey: "id", onDelete: "CASCADE" });
-Channel.belongsTo(Message, {foreignKey: "lastMessage", targetKey: "id", onDelete: "SET NULL"});
+Channel.belongsTo(Message, { foreignKey: "lastMessage", targetKey: "id",  onDelete: "CASCADE" });
+
+Message.belongsTo(Media, { foreignKey: "file", targetKey: "id", onDelete: "CASCADE" });
+
 await postgres.sync({ alter: true });
 pinoLogger.info("All models were synchronized successfully.");
 

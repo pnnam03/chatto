@@ -19,7 +19,10 @@ export class channelService {
       const nullIndex = memberResults.findIndex((member) => member === null);
       if (nullIndex !== -1) throw new Error(`User with ID ${members[nullIndex]} could not be found`);
       await channel.addUsers(memberResults);
-      return channel;
+
+      const userAttributes = ["id", "firstName", "lastName"];
+      const memberRecords = await channel.getUsers({ attributes: userAttributes });
+      return {...channel.dataValues, members: memberRecords};
     });
     return record;
   }
@@ -34,7 +37,7 @@ export class channelService {
     if (!channel) return {};
     const userAttributes = ["id", "firstName", "lastName"];
     const members = await channel.getUsers({ attributes: userAttributes });
-    const lastMessage = await channel.getMessage({ attributes: ["id", "updatedAt", "type", "data", "sender"] });
+    const lastMessage = await channel.getMessage({ attributes: ["id", "updatedAt", "type", "text", "sender"] });
     var response;
     if (!lastMessage) response = { ...channel.dataValues, members };
     else {
@@ -42,7 +45,7 @@ export class channelService {
       const lastMessageInfo = { ...lastMessage.dataValues, sender: senderInfo };
       response = { ...channel.dataValues, members, lastMessage: lastMessageInfo };
     }
-    response.creator = await User.findOne({ where: { id: response.creator }, attributes: userAttributes });
+    response.creator = await channel.getUser({attributes: ['firstName', 'lastName', 'id', 'email']});
     return response;
   }
 
@@ -66,13 +69,16 @@ export class channelService {
     return members.includes(userId);
   }
 
-  static async addMembers(channelId, members) {
+  static async addMembers(channelId, newMembers) {
     const records = postgres.transaction(async (t) => {
       const channel = await baseService.getOne(Channel, channelId);
-      const memberPromises = members.map((user) => baseService.getOne(User, user.id));
-      const memberResults = await Promise.all(memberPromises);
-      await channel.addUsers(memberResults);
-      return channel;
+      const newMemberPromises = newMembers.map((user) => baseService.getOne(User, user.id));
+      const newMemberResults = await Promise.all(newMemberPromises);
+      await channel.addUsers(newMemberResults);
+
+      const userAttributes = ["id", "firstName", "lastName"];
+      const memberRecords = await channel.getUsers({ attributes: userAttributes });
+      return {...channel.dataValues, members: memberRecords};
     });
     return records;
   }
