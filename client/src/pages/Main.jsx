@@ -11,8 +11,13 @@ import useChannelStore from "../stores/channelStore.js";
 import useUserStore from "../stores/userStore.js";
 import { toastOptions } from "../toastOptions.jsx";
 const Main = () => {
-  const { channels, fetchChannels, channelError, setCurrentChannel, currentChannel } =
-    useChannelStore();
+  const {
+    channels,
+    fetchChannels,
+    channelError,
+    setCurrentChannel,
+    currentChannel,
+  } = useChannelStore();
   const { user, userError } = useUserStore();
 
   const navigate = useNavigate();
@@ -23,20 +28,26 @@ const Main = () => {
   }, [channelError, userError]);
 
   useEffect(() => {
-    !user && navigate(SignInPath);
-    user && fetchChannels(user.accessToken);
-    user &&
-      socket.emit("add-online-user", {
-        user: user.id,
-      });
+    if (!user) {
+      navigate(SignInPath);
+      return;
+    }
+
+    fetchChannels(user.accessToken);
+    if (channelError) { 
+      console.error(channelError);
+      return;
+    }
+    socket.emit("add-online-user", {
+      user: user.id,
+    });
   }, [user]);
 
   useEffect(() => {
     channels?.map((channel) => {
       socket.emit("join-channel", channel);
     });
-    if (channels?.length && !currentChannel)
-      setCurrentChannel(channels[0]);
+    if (channels?.length && !currentChannel) setCurrentChannel(channels[0]);
   }, [channels]);
 
   return (

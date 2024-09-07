@@ -14,6 +14,7 @@ import useUserStore from "../../stores/userStore.js";
 import { toastOptions } from "../../toastOptions.jsx";
 import AvatarGroup from "../AvatarGroup.jsx";
 import "./chat.css";
+
 const Chat = () => {
   const { setMsgs } = useMessageStore();
   const [messages, setMessages] = useState([]);
@@ -137,18 +138,25 @@ const Chat = () => {
         setChannels(
           channels.map((channel) =>
             channel.id === incomingMessage.channelId
-              ? { ...channel, hasNewMessage: false, lastMessage: incomingMessage }
+              ? {
+                  ...channel,
+                  hasNewMessage: false,
+                  lastMessage: incomingMessage,
+                }
               : channel
           )
         );
-      }
-      else {
+      } else {
         // notify received a message in different channel
         // update the channel with incoming message
         setChannels(
           channels.map((channel) =>
             channel.id === incomingMessage.channelId
-              ? { ...channel, hasNewMessage: true, lastMessage: incomingMessage }
+              ? {
+                  ...channel,
+                  hasNewMessage: true,
+                  lastMessage: incomingMessage,
+                }
               : channel
           )
         );
@@ -158,7 +166,6 @@ const Chat = () => {
     }
   }, [incomingMessage]);
 
-  
   const handleSendMessage = () => {
     if (currentMessage?.type === "text" && currentMessage?.text === "") {
       return;
@@ -171,6 +178,9 @@ const Chat = () => {
     setOpen(false);
   };
 
+  const handleStartVideoCall = () => {
+    window.open(`/call/${currentChannel.name}/${user.id}`, "_blank", "width=800, height=600");
+  };
   useEffect(() => {
     currentMessage.type === "file" && handleSendMessage();
   }, [currentMessage]);
@@ -197,6 +207,7 @@ const Chat = () => {
             {/* <p>Lorem ipsum dolor, sit amet.</p> */}
           </div>
         </div>
+        <button onClick={handleStartVideoCall}>call</button>
       </div>
       <div className="center" ref={endRef}>
         {messages?.map((message, index) => (
@@ -245,8 +256,18 @@ const Chat = () => {
             onChange={handleImg}
             accept="image/*"
           />
-          {/* <img src="./camera.png" alt="" />
-          <img src="./mic.png" alt="" /> */}
+          {/* <img src="./camera.png" alt="" /> */}
+          {/* <img src="./mic.png" alt="" /> */}
+        </div>
+        <div className="emoji">
+          <img
+            src="./emoji.png"
+            alt=""
+            onClick={() => setOpen((prev) => !prev)}
+          />
+          <div className="picker">
+            <EmojiPicker open={open} onEmojiClick={handleEmoji} />
+          </div>
         </div>
         <input
           type="text"
@@ -261,23 +282,15 @@ const Chat = () => {
           }}
           disabled={isCurrentUserBlocked || isReceiverBlocked}
         />
-        <div className="emoji">
-          <img
-            src="./emoji.png"
-            alt=""
-            onClick={() => setOpen((prev) => !prev)}
-          />
-          <div className="picker">
-            <EmojiPicker open={open} onEmojiClick={handleEmoji} />
-          </div>
-        </div>
-        <button
+
+        {/* <button
           className="sendButton"
           onClick={handleSendMessage}
           disabled={isCurrentUserBlocked || isReceiverBlocked}
         >
           Send
-        </button>
+        </button> */}
+        <img src="./send.svg" onClick={handleSendMessage} />
       </div>
     </div>
   );

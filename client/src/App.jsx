@@ -1,10 +1,12 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Main from "./pages/Main.jsx";
 // import Chat from "./pages/Chat.jsx";
+import Call from "./pages/Call.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import {
+  CallPath,
   ForgotPasswordPath,
   MainPath,
   SignInPath,
@@ -19,6 +21,7 @@ const App = () => {
         <Route path={SignInPath} element={<SignIn />} />
         <Route path={SignUpPath} element={<SignUp />} />
         <Route path={ForgotPasswordPath} element={<ForgotPassword />} />
+        <Route path={`${CallPath}/:channelName/:participantId`} element={<Call />} />
       </Routes>
     </BrowserRouter>
   );

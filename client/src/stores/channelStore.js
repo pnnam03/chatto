@@ -17,13 +17,8 @@ const useChannelStore = create((set) => ({
 
       const responseData = await response.json();
       const channels = responseData.sort((a,b) => {
-        if (!a.lastMessage)
-          return -1;
-        if (!b.lastMessage)
-          return 1;
-
-        const timeA = new Date(a.lastMessage.updatedAt);
-        const timeB = new Date(b.lastMessage.updatedAt);
+        const timeA = new Date(a.lastMessage?.updatedAt || a.updatedAt);
+        const timeB = new Date(b.lastMessage?.updatedAt || b.updatedAt);
         return timeB - timeA;
       });
       
@@ -37,12 +32,8 @@ const useChannelStore = create((set) => ({
   },
   setChannels: (unsortedChannels) => {
     const channels = unsortedChannels.sort((a,b) => {
-      if (!a.lastMessage)
-        return -1;
-      if (!b.lastMessage)
-        return 1;
-      const timeA = new Date(a.lastMessage.updatedAt);
-      const timeB = new Date(b.lastMessage.updatedAt);
+      const timeA = new Date(a.lastMessage?.updatedAt || a.updatedAt);
+      const timeB = new Date(b.lastMessage?.updatedAt || b.updatedAt);
       return timeB - timeA;
     });
     

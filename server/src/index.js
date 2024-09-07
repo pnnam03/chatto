@@ -37,6 +37,7 @@ fastify.listen({ port: APP.PORT }, (err, addr) => {
 
 fastify.ready().then(() => {
   let onlineUsers = {};
+  const users = {};
 
   fastify.io.on("connection", (socket) => {
     socket.on("add-online-user", async (data) => {
@@ -45,7 +46,6 @@ fastify.ready().then(() => {
 
     socket.on("join-channel", (channel) => {
       console.log(`Socket ${socket.id} has joined channel ${channel.id}`);
-      // console.log(channel);
       socket.join(channel.id);
     });
 
@@ -59,12 +59,46 @@ fastify.ready().then(() => {
       socket.to(data.channelId).emit("msg-received", data);
     });
 
-    socket.on("add-channel-member", (data) => {
-
-    })
+    socket.on("add-channel-member", (data) => {});
 
     socket.on("disconnect", async () => {
-      // console.log(`Socket ${socket.id} has disconnected`);
+      console.log(`Socket ${socket.id} has disconnected`);
     });
+
+    socket.on("join-call", async ({ userId, channelId }) => {
+      console.log(`User ${userId} has joined channel ${channelId}`);
+      const sockets = await fastify.io.in(channelId).fetchSockets();
+      console.log(
+        sockets.map((s) => {
+          return s.id;
+        }),
+      );
+      socket.join(channelId);
+      socket.to(channelId).emit("user-joined", { userId, channelId });
+      socket.emit("list-of-users", {
+        users: sockets.map((s) => {
+          return s.id;
+        }),
+      });
+    });
+
+    socket.on("leave-call", ({ userId, channelId }) => {
+      console.log(`User ${userId} has left channel ${channelId}`);
+      socket.to(channelId).emit("user-left", { userId, channelId });
+    });
+
+    socket.on("signal", ({ from, to, signal }) => {
+      socket.to(to).emit("signal", { from, to, signal });
+    });
+
+    socket.on("initiator-signal", ({ initiator, receiver, channelId, signal }) => {
+      console.log("initiator-signal", { initiator, receiver, channelId });
+      socket.to(receiver).emit("initiator-signal", { initiator, receiver, channelId, signal });
+    });
+
+    socket.on("receiver-signal", ({ initiator, receiver, channelId, signal }) => {
+      socket.to(initiator).emit("receiver-signal", { initiator, receiver, signal });
+    });
+    // socket.
   });
 });

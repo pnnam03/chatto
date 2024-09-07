@@ -112,12 +112,12 @@
   }
 
   .bottom {
-    padding: 20px;
+    padding: 15px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-top: 1px solid #dddddd35;
-    gap: 20px;
+    gap: 15px;
     margin-top: auto;
 
     .icons {
@@ -148,7 +148,15 @@
 
     .emoji {
       position: relative;
+      display: flex;
+      justify-content: center;
+      /* padding: 15px; */
+      border-radius: 50%;
 
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+      }
       .picker {
         position: absolute;
         bottom: 50px;
