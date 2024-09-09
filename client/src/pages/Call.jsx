@@ -6,14 +6,22 @@ import "./Call.css";
 
 const Video = (props) => {
   const ref = useRef();
+  console.log("why is it not running herer?  ");
+  console.log(props.peer);
   useEffect(() => {
     props.peer.on("stream", (stream) => {
+      console.log("[herer]");
       console.log({ ref: ref.current });
       ref.current.srcObject = stream;
     });
   }, []);
 
-  return <video playsInline autoPlay ref={ref} width="300px" />;
+  return (
+    <div className="video-container">
+      <video playsInline autoPlay ref={ref} width="300px" />;
+      <div className="user-name">Guest {props.key}</div>
+    </div>
+  );
 };
 
 const Call = () => {
@@ -29,14 +37,21 @@ const Call = () => {
   useEffect(() => {
     const initMediaStream = async () => {
       try {
-        const stream = await navigator.getUserMedia({
+        console.log("[initMediaStream]");
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
-          audio: true,
+          audio: false,
         });
+        console.log("[initMe]");
+        // userVideo.current.srcObject = stream;
         setLocalStream(stream);
 
-        socket.on("user-joined", handleUserJoined);
-        socket.on("initiator-signal", handleInitiatorSignal);
+        socket.on("user-joined", ({ userId, channelId }) => {
+          handleUserJoined({ userId, channelId, stream });
+        });
+        socket.on("initiator-signal", ({ initiator, receiver, signal }) => {
+          handleInitiatorSignal({ initiator, receiver, signal, stream });
+        });
         socket.on("receiver-signal", handleReceiverSignal);
       } catch (error) {
         console.error("Error accessing media devices: ", error);
@@ -46,29 +61,30 @@ const Call = () => {
     initMediaStream();
   }, []);
 
-  useEffect(() => {
-    if (localStream && userVideo.current) {
-      userVideo.current.srcObject = localStream;
-    }
-  }, [localStream]);
+  // useEffect(() => {
+  //   if (localStream && userVideo.current) {
+  //     userVideo.current.srcObject = localStream;
+  //   }
+  // }, [localStream]);
 
-  const handleUserJoined = ({ userId, channelId }) => {
-    console.log(`User ${userId} joined channel ${channelId}`);
+  const handleUserJoined = ({ userId, channelId, stream }) => {
+    console.log("[handleUserJoined]", {
+      userId,
+      socket_id: socket.id,
+      channelId,
+      stream,
+    });
     const peer = createInitiatorPeer(userId, socket.id, stream);
-    setPeers((prevPeers) => [
-      ...prevPeers,
-      { remotePeerId: userId, peer },
-    ]);
+    setPeers((prevPeers) => [...prevPeers, { remotePeerId: userId, peer }]);
     peersRef.current.push({ remotePeerId: userId, peer });
+    console.log("[handleUserJoined]", peersRef.current);
   };
 
-  const handleInitiatorSignal = ({ initiator, receiver, signal }) => {
-    console.log("received initiator-signal");
+  const handleInitiatorSignal = ({ initiator, receiver, signal, stream }) => {
+    console.log("[handleInitiatorSignal] received initiator-signal");
+    console.log({ stream });
     const peer = createReceiverPeer(receiver, initiator, signal, stream);
-    setPeers((prevPeers) => [
-      ...prevPeers,
-      { remotePeerId: initiator, peer },
-    ]);
+    setPeers((prevPeers) => [...prevPeers, { remotePeerId: initiator, peer }]);
     peersRef.current.push({ remotePeerId: initiator, peer });
   };
 
@@ -82,7 +98,7 @@ const Call = () => {
   };
 
   const createInitiatorPeer = (receiver, initiator, stream) => {
-    console.log(`Creating peer from ${initiator} to ${receiver}`);
+    console.log(`[createInitiatorPeer] From ${initiator} To ${receiver}`);
     const peer = new Peer({
       initiator: true,
       trickle: false,
@@ -90,7 +106,7 @@ const Call = () => {
     });
 
     peer.on("signal", (signal) => {
-      console.log("initiator-signal to backend");
+      console.log("initiator send signal to back end");
       socket.emit("initiator-signal", { initiator, receiver, signal });
     });
 
@@ -108,10 +124,12 @@ const Call = () => {
     peer.on("error", (err) => {
       console.error(err);
     });
+
     return peer;
   };
 
   const createReceiverPeer = (receiver, initiator, incommingSignal, stream) => {
+    console.log("[createReceiverPeer]", stream);
     const peer = new Peer({
       initiator: false,
       trickle: false,
@@ -157,10 +175,6 @@ const Call = () => {
     setJoinedCall(false);
   };
 
-  useEffect(() => {
-    console.log({ peers });
-  }, [peers]);
-  
   return (
     <>
       {!joinedCall ? (
